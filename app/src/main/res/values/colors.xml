@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Light: warm paper and roasted coffee -->
+    <color name="espresso">#6F4E37</color>
+    <color name="espresso_on">#FFFFFF</color>
+    <color name="espresso_container">#FFDCC2</color>
+    <color name="espresso_on_container">#2B1708</color>
+
+    <color name="caramel">#9C6B3F</color>
+    <color name="caramel_on">#FFFFFF</color>
+    <color name="caramel_container">#F6E0CB</color>
+    <color name="caramel_on_container">#301B0A</color>
+
+    <color name="cream">#FFF8F3</color>
+    <color name="cream_surface">#FFFFFF</color>
+    <color name="cream_surface_variant">#F1E4D8</color>
+    <color name="on_cream">#231A15</color>
+    <color name="on_cream_variant">#57453A</color>
+    <color name="outline_light">#8C7B6E</color>
+
+    <!-- Dark: low-lit room, lighter crema tones -->
+    <color name="espresso_dark">#E9B98A</color>
+    <color name="espresso_on_dark">#442A12</color>
+    <color name="espresso_container_dark">#5D3F26</color>
+    <color name="espresso_on_container_dark">#FFDCC2</color>
+
+    <color name="caramel_dark">#E2BC96</color>
+    <color name="caramel_on_dark">#3E2714</color>
+    <color name="caramel_container_dark">#573B24</color>
+    <color name="caramel_on_container_dark">#F6E0CB</color>
+
+    <color name="roast">#191210</color>
+    <color name="roast_surface">#201815</color>
+    <color name="roast_surface_variant">#4F4239</color>
+    <color name="on_roast">#EDE0DA</color>
+    <color name="on_roast_variant">#D6C3B6</color>
+    <color name="outline_dark">#9E8D81</color>
+</resources>

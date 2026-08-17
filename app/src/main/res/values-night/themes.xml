@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.AdlCafe" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/espresso_dark</item>
+        <item name="colorOnPrimary">@color/espresso_on_dark</item>
+        <item name="colorPrimaryContainer">@color/espresso_container_dark</item>
+        <item name="colorOnPrimaryContainer">@color/espresso_on_container_dark</item>
+
+        <item name="colorSecondary">@color/caramel_dark</item>
+        <item name="colorOnSecondary">@color/caramel_on_dark</item>
+        <item name="colorSecondaryContainer">@color/caramel_container_dark</item>
+        <item name="colorOnSecondaryContainer">@color/caramel_on_container_dark</item>
+
+        <item name="android:colorBackground">@color/roast</item>
+        <item name="colorOnBackground">@color/on_roast</item>
+        <item name="colorSurface">@color/roast_surface</item>
+        <item name="colorOnSurface">@color/on_roast</item>
+        <item name="colorSurfaceVariant">@color/roast_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/on_roast_variant</item>
+        <item name="colorOutline">@color/outline_dark</item>
+
+        <item name="android:statusBarColor">@color/roast</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+    </style>
+
+</resources>

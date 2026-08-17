@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ADL Cafe</string>
+
+    <string name="title_menu">Menu</string>
+    <string name="title_detail">Item</string>
+    <string name="title_cart">Cart</string>
+    <string name="title_checkout">Checkout</string>
+    <string name="title_confirmation">Order placed</string>
+    <string name="title_orders">Orders</string>
+
+    <string name="nav_menu">Menu</string>
+    <string name="nav_cart">Cart</string>
+    <string name="nav_orders">Orders</string>
+
+    <!-- Menu -->
+    <string name="search_hint">Search the menu</string>
+    <string name="category_all">All</string>
+    <string name="popular">Popular</string>
+    <string name="add">Add</string>
+    <string name="added_to_cart">%1$s added to cart</string>
+    <string name="menu_empty_title">Nothing matches that</string>
+    <string name="menu_empty_body">Try a different search or pick another category.</string>
+
+    <!-- Detail -->
+    <string name="label_size">Size</string>
+    <string name="label_quantity">Quantity</string>
+    <string name="size_with_surcharge">%1$s +%2$s</string>
+    <string name="add_to_cart_with_total">Add to cart · %1$s</string>
+    <string name="decrease_quantity">Decrease quantity</string>
+    <string name="increase_quantity">Increase quantity</string>
+
+    <!-- Cart -->
+    <string name="cart_empty_title">Your cart is empty</string>
+    <string name="cart_empty_body">Add something from the menu and it will show up here.</string>
+    <string name="browse_menu">Browse the menu</string>
+    <string name="clear_cart">Clear cart</string>
+    <string name="checkout">Checkout</string>
+    <string name="subtotal">Subtotal</string>
+    <!-- formatted="false": the % is literal, not a format specifier. -->
+    <string name="tax" formatted="false">Tax (8.5%)</string>
+    <string name="total">Total</string>
+    <string name="remove_item">Remove item</string>
+    <string name="size_and_unit_price">%1$s · %2$s each</string>
+
+    <!-- Checkout -->
+    <string name="checkout_details">Your details</string>
+    <string name="hint_name">Name for the order</string>
+    <string name="hint_note">Notes for the barista (optional)</string>
+    <string name="error_name_required">We need a name to call out</string>
+    <string name="pickup">Pickup</string>
+    <string name="dine_in">Dine in</string>
+    <string name="order_summary">Order summary</string>
+    <string name="place_order">Place order</string>
+
+    <!-- Confirmation -->
+    <string name="confirmation_title">Order placed</string>
+    <string name="confirmation_body">We are on it. Listen out for your name.</string>
+    <string name="confirmation_pickup">Ready for pickup at the counter</string>
+    <string name="confirmation_dine_in">We will bring it to your table</string>
+    <string name="back_to_menu">Back to menu</string>
+    <string name="view_orders">View my orders</string>
+
+    <!-- Orders -->
+    <string name="orders_empty_title">No orders yet</string>
+    <string name="orders_empty_body">Once you place an order it will be kept here.</string>
+    <string name="order_line_summary">%1$d × %2$s — %3$s</string>
+
+    <plurals name="item_count">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+</resources>
