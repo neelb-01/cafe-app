@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.adl.cafe.R
+import com.adl.cafe.data.Pricing
 import com.adl.cafe.data.model.OrderType
 import com.adl.cafe.databinding.FragmentCheckoutBinding
 import com.adl.cafe.ui.cafeViewModelFactory
@@ -28,6 +29,8 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCheckoutBinding.bind(view)
+
+        binding.textTaxLabel.text = getString(R.string.tax, Pricing.taxRateLabel)
 
         binding.inputName.doAfterTextChanged { viewModel.clearNameError() }
 

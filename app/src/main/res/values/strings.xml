@@ -37,8 +37,8 @@
     <string name="clear_cart">Clear cart</string>
     <string name="checkout">Checkout</string>
     <string name="subtotal">Subtotal</string>
-    <!-- formatted="false": the % is literal, not a format specifier. -->
-    <string name="tax" formatted="false">Tax (8.5%)</string>
+    <!-- Rate is filled in from Pricing.taxRateLabel so it cannot drift from the maths. -->
+    <string name="tax">Tax (%1$s)</string>
     <string name="total">Total</string>
     <string name="remove_item">Remove item</string>
     <string name="size_and_unit_price">%1$s · %2$s each</string>

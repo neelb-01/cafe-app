@@ -10,6 +10,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.adl.cafe.R
+import com.adl.cafe.data.Pricing
 import com.adl.cafe.databinding.FragmentCartBinding
 import com.adl.cafe.ui.cafeViewModelFactory
 import com.adl.cafe.util.asMoney
@@ -27,6 +28,8 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCartBinding.bind(view)
+
+        binding.textTaxLabel.text = getString(R.string.tax, Pricing.taxRateLabel)
 
         cartAdapter = CartAdapter(
             onIncrement = viewModel::increment,
