@@ -1,5 +1,6 @@
 package com.adl.cafe.data
 
+import androidx.room.withTransaction
 import com.adl.cafe.data.dao.CartDao
 import com.adl.cafe.data.dao.MenuDao
 import com.adl.cafe.data.dao.OrderDao
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
  * on the DAOs directly, so the storage layer stays swappable.
  */
 class CafeRepository(
+    private val database: AppDatabase,
     private val menuDao: MenuDao,
     private val cartDao: CartDao,
     private val orderDao: OrderDao
@@ -45,13 +47,21 @@ class CafeRepository(
 
     fun observeCartCount(): Flow<Int> = cartDao.observeCartCount()
 
-    /** Adding an item already in the cart at the same size bumps its quantity. */
+    /**
+     * Adding an item already in the cart at the same size bumps its quantity.
+     *
+     * The lookup and the write must share a transaction: two quick-adds racing
+     * would otherwise both see no existing row and both insert, and the unique
+     * index on (menuItemId, size) turns the loser into a constraint crash.
+     */
     suspend fun addToCart(menuItemId: Long, size: DrinkSize, quantity: Int) {
-        val existing = cartDao.findLine(menuItemId, size)
-        if (existing == null) {
-            cartDao.insert(CartItem(menuItemId = menuItemId, size = size, quantity = quantity))
-        } else {
-            cartDao.update(existing.copy(quantity = existing.quantity + quantity))
+        database.withTransaction {
+            val existing = cartDao.findLine(menuItemId, size)
+            if (existing == null) {
+                cartDao.insert(CartItem(menuItemId = menuItemId, size = size, quantity = quantity))
+            } else {
+                cartDao.update(existing.copy(quantity = existing.quantity + quantity))
+            }
         }
     }
 
@@ -79,14 +89,18 @@ class CafeRepository(
     /**
      * Turns the current cart into an order and empties the cart.
      * Returns the new order id, or null if the cart was empty.
+     *
+     * All of it runs in one transaction. Split across separate writes, a crash
+     * partway through could leave an order with no number, an order with no
+     * lines, or a placed order whose cart was never cleared.
      */
     suspend fun placeOrder(
         customerName: String,
         orderType: OrderType,
         note: String
-    ): Long? {
+    ): Long? = database.withTransaction {
         val lines = cartDao.getCartLines()
-        if (lines.isEmpty()) return null
+        if (lines.isEmpty()) return@withTransaction null
 
         val subtotal = lines.sumOf { it.lineTotalCents }
         val tax = Pricing.taxOn(subtotal)
@@ -119,6 +133,6 @@ class CafeRepository(
         )
 
         cartDao.clear()
-        return orderId
+        orderId
     }
 }

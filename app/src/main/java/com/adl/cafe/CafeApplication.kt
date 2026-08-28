@@ -18,7 +18,7 @@ class CafeApplication : Application() {
 
     val repository: CafeRepository by lazy {
         val db = AppDatabase.getInstance(this)
-        CafeRepository(db.menuDao(), db.cartDao(), db.orderDao())
+        CafeRepository(db, db.menuDao(), db.cartDao(), db.orderDao())
     }
 
     override fun onCreate() {
