@@ -40,6 +40,14 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    testOptions {
+        unitTests {
+            // Robolectric reads the merged manifest and resources off the
+            // unit-test classpath; without this it cannot start.
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 ksp {
@@ -68,6 +76,12 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     testImplementation(libs.junit)
+    // AndroidJUnit4 (a runner that delegates to Robolectric off-device) and
+    // ApplicationProvider. Robolectric gives the Room tests a real SQLite.
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.androidx.test.core.ktx)
+    testImplementation(libs.robolectric)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
