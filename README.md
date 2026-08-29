@@ -27,8 +27,26 @@ database, so the cart and order history survive an app restart.
 Command line, once the Android SDK path is set:
 
 ```bash
-./gradlew assembleDebug
+./gradlew assembleDebug   # build
+./gradlew test            # unit tests
 ```
+
+## Tests
+
+Everything lives in `src/test/` and runs on the JVM — no emulator, no device:
+
+```bash
+./gradlew test
+./gradlew test --tests 'com.adl.cafe.data.PricingTest'
+```
+
+| Suite | Covers |
+| --- | --- |
+| `PricingTest` | Plain JUnit. Integer tax arithmetic: the exact-half-cent boundary, monotonicity, overflow at the top of the `Int` range, and that the displayed rate matches the rate charged. |
+| `CafeRepositoryTest` | An in-memory Room database under [Robolectric](https://robolectric.org). Cart merging under 24 concurrent adds, and order placement rolling back cleanly when a write partway through fails. |
+
+Robolectric downloads an `android-all` jar on first run, so the initial
+`./gradlew test` needs network access.
 
 ## Architecture
 
@@ -36,7 +54,7 @@ Command line, once the Android SDK path is set:
 ui/<screen>/   Fragment + ViewModel (+ RecyclerView adapter)
       ↓ observes StateFlow
 data/CafeRepository      the only thing the UI talks to
-      ↓
+      ↓                  (also holds AppDatabase, for withTransaction)
 data/dao/*      MenuDao · CartDao · OrderDao  (Flow-returning queries)
       ↓
 data/AppDatabase         Room, 4 entities
@@ -48,12 +66,18 @@ data/AppDatabase         Room, 4 entities
 - **Money is integer cents** everywhere (`priceCents`, `totalCents`) and only
   formatted for display by `Int.asMoney()`. No floating point arithmetic on prices.
 - **`Pricing`** holds the tax rate and order-number format, so the cart, checkout
-  screen and stored receipt can never disagree.
+  screen and stored receipt can never disagree. The rate is basis points (850 =
+  8.5%) with half-up integer rounding, and the tax row's label is derived from
+  that same constant rather than hardcoded in `strings.xml`.
 - **Order lines snapshot** the item name, emoji and unit price at the time of
   ordering. Editing or deleting a menu item later does not rewrite old receipts.
 - **The cart merges duplicates**: adding an item that is already in the cart at
   the same size bumps the quantity instead of adding a second row (enforced by a
-  unique index on `menuItemId + size`).
+  unique index on `menuItemId + size`). The lookup and the write share a
+  transaction, so concurrent quick-adds cannot both miss the row and collide.
+- **Checkout is atomic**: the order row, its number, its lines and the cart clear
+  are one transaction, so a failure partway through leaves no half-written order
+  and an intact cart.
 
 ### Data model
 
