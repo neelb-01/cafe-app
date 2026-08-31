@@ -42,7 +42,7 @@ Everything lives in `src/test/` and runs on the JVM — no emulator, no device:
 
 | Suite | Covers |
 | --- | --- |
-| `PricingTest` | Plain JUnit. Integer tax arithmetic: the exact-half-cent boundary, monotonicity, overflow at the top of the `Int` range, and that the displayed rate matches the rate charged. |
+| `PricingTest` | Plain JUnit. Integer tax arithmetic: the exact-half-cent boundary, monotonicity, overflow at the top of the `Int` range, and that the displayed rate matches the rate charged. Also the order-number format — zero padding and the offset from the row id. |
 | `CafeRepositoryTest` | An in-memory Room database under [Robolectric](https://robolectric.org). Cart merging under 24 concurrent adds, and order placement rolling back cleanly when a write partway through fails. |
 
 Robolectric downloads an `android-all` jar on first run, so the initial
