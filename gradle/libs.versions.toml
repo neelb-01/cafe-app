@@ -1,7 +1,7 @@
 [versions]
 agp = "8.5.2"
-kotlin = "2.0.20"
-ksp = "2.0.20-1.0.25"
+kotlin = "2.1.0"
+ksp = "2.1.0-1.0.29"
 
 coreKtx = "1.13.1"
 appcompat = "1.7.0"
@@ -13,7 +13,13 @@ fragment = "1.8.2"
 lifecycle = "2.8.4"
 navigation = "2.7.7"
 room = "2.6.1"
-coroutines = "1.8.1"
+coroutines = "1.9.0"
+
+# supabase-kt 3.0.x is the newest line built against Kotlin 2.1; later lines
+# need Kotlin 2.2+. Ktor supplies its HTTP engine.
+supabase = "3.0.3"
+ktor = "3.0.2"
+serialization = "1.7.3"
 
 junit = "4.13.2"
 androidxJunit = "1.2.1"
@@ -41,6 +47,11 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
+
+supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabase" }
+supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }
@@ -52,3 +63,4 @@ robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
