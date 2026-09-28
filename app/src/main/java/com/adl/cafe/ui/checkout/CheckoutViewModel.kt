@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.adl.cafe.data.CafeRepository
 import com.adl.cafe.data.Pricing
 import com.adl.cafe.data.model.OrderType
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -62,6 +63,10 @@ class CheckoutViewModel(private val repository: CafeRepository) : ViewModel() {
     private val _placedOrderId = MutableStateFlow<Long?>(null)
     val placedOrderId: StateFlow<Long?> = _placedOrderId.asStateFlow()
 
+    /** True once when placing an order failed (offline, or rejected by the server). */
+    private val _orderFailed = MutableStateFlow(false)
+    val orderFailed: StateFlow<Boolean> = _orderFailed.asStateFlow()
+
     fun placeOrder(name: String, orderType: OrderType, note: String) {
         if (name.isBlank()) {
             _nameError.value = true
@@ -72,9 +77,15 @@ class CheckoutViewModel(private val repository: CafeRepository) : ViewModel() {
         _nameError.value = false
         _placing.value = true
         viewModelScope.launch {
-            val orderId = repository.placeOrder(name, orderType, note)
-            _placing.value = false
-            _placedOrderId.value = orderId
+            try {
+                _placedOrderId.value = repository.placeOrder(name, orderType, note)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _orderFailed.value = true
+            } finally {
+                _placing.value = false
+            }
         }
     }
 
@@ -84,5 +95,9 @@ class CheckoutViewModel(private val repository: CafeRepository) : ViewModel() {
 
     fun consumePlacedOrder() {
         _placedOrderId.value = null
+    }
+
+    fun consumeOrderFailed() {
+        _orderFailed.value = false
     }
 }

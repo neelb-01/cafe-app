@@ -52,6 +52,7 @@
     <string name="dine_in">Dine in</string>
     <string name="order_summary">Order summary</string>
     <string name="place_order">Place order</string>
+    <string name="error_order_failed">Could not place your order. Check your connection and try again.</string>
 
     <!-- Confirmation -->
     <string name="confirmation_title">Order placed</string>

@@ -18,9 +18,6 @@ interface OrderDao {
     @Insert
     suspend fun insertLines(lines: List<OrderLine>)
 
-    @Query("UPDATE orders SET orderNumber = :number WHERE id = :orderId")
-    suspend fun setOrderNumber(orderId: Long, number: String)
-
     @Transaction
     @Query("SELECT * FROM orders ORDER BY placedAtMillis DESC")
     fun observeOrders(): Flow<List<OrderWithLines>>

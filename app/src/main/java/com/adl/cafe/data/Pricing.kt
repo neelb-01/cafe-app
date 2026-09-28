@@ -8,6 +8,10 @@ object Pricing {
     /**
      * Tax rate in basis points (850 = 8.5%). Held as an Int so [taxOn] can stay
      * in integer arithmetic — cents never pass through a Double.
+     *
+     * The server charges its own copy of this rate (`place_order` in
+     * `supabase/schema.sql`); change both together. The rate here drives the
+     * checkout estimate, the server's drives the stored receipt.
      */
     const val TAX_BASIS_POINTS = 850
 
@@ -30,6 +34,4 @@ object Pricing {
         get() = NumberFormat.getPercentInstance()
             .apply { maximumFractionDigits = 2 }
             .format(TAX_BASIS_POINTS.toDouble() / BASIS_POINT_SCALE)
-
-    fun orderNumber(orderId: Long): String = "ADL-%04d".format(1000 + orderId)
 }

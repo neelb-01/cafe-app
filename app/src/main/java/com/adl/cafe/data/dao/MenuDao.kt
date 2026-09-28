@@ -3,6 +3,7 @@ package com.adl.cafe.data.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Upsert
 import com.adl.cafe.data.model.MenuItem
 import kotlinx.coroutines.flow.Flow
 
@@ -14,6 +15,16 @@ interface MenuDao {
 
     @Insert
     suspend fun insertAll(items: List<MenuItem>)
+
+    /**
+     * Update-or-insert, never delete-and-reinsert: REPLACE would delete the old
+     * row first, and the cart's foreign key would cascade that into the cart.
+     */
+    @Upsert
+    suspend fun upsertAll(items: List<MenuItem>)
+
+    @Query("DELETE FROM menu_items WHERE id NOT IN (:keepIds)")
+    suspend fun deleteAllExcept(keepIds: List<Long>)
 
     @Query("SELECT * FROM menu_items WHERE id = :id")
     fun observeById(id: Long): Flow<MenuItem?>

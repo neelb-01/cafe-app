@@ -17,6 +17,7 @@ import com.adl.cafe.databinding.FragmentCheckoutBinding
 import com.adl.cafe.ui.cafeViewModelFactory
 import com.adl.cafe.ui.confirmation.OrderConfirmedFragment
 import com.adl.cafe.util.asMoney
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
@@ -82,6 +83,18 @@ class CheckoutFragment : Fragment(R.layout.fragment_checkout) {
                                 R.id.action_checkout_to_confirmation,
                                 bundleOf(OrderConfirmedFragment.ARG_ORDER_ID to orderId)
                             )
+                        }
+                    }
+                }
+                launch {
+                    viewModel.orderFailed.collect { failed ->
+                        if (failed) {
+                            Snackbar.make(
+                                binding.root,
+                                R.string.error_order_failed,
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                            viewModel.consumeOrderFailed()
                         }
                     }
                 }

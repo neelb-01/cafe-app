@@ -17,7 +17,7 @@ class PricingTest {
 
     @Before
     fun fixLocale() {
-        // taxRateLabel and orderNumber both format through the default locale.
+        // taxRateLabel formats through the default locale.
         originalLocale = Locale.getDefault()
         Locale.setDefault(Locale.US)
     }
@@ -76,19 +76,5 @@ class PricingTest {
         assertEquals("8.5%", Pricing.taxRateLabel)
         // Same claim, stated as arithmetic: 8.5% of $100.00 is $8.50.
         assertEquals(850, Pricing.taxOn(10_000))
-    }
-
-    // ---- orderNumber ------------------------------------------------------
-
-    @Test
-    fun `order numbers are padded and offset from the row id`() {
-        assertEquals("ADL-1000", Pricing.orderNumber(0))
-        assertEquals("ADL-1001", Pricing.orderNumber(1))
-        assertEquals("ADL-1042", Pricing.orderNumber(42))
-    }
-
-    @Test
-    fun `order numbers keep growing past four digits`() {
-        assertEquals("ADL-10000", Pricing.orderNumber(9_000))
     }
 }
