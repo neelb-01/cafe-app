@@ -44,7 +44,13 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
                     bundleOf(ARG_ITEM_ID to item.id)
                 )
             },
-            onQuickAdd = viewModel::quickAdd
+            onQuickAdd = viewModel::quickAdd,
+            onEmojiClick = { item ->
+                // A fast double tap would otherwise stack two sheets.
+                if (childFragmentManager.findFragmentByTag(ItemPreviewSheet.TAG) == null) {
+                    ItemPreviewSheet.newInstance(item).show(childFragmentManager, ItemPreviewSheet.TAG)
+                }
+            }
         )
         binding.recyclerMenu.apply {
             layoutManager = LinearLayoutManager(requireContext())

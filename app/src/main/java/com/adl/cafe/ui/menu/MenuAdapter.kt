@@ -12,7 +12,8 @@ import com.adl.cafe.util.asMoney
 
 class MenuAdapter(
     private val onClick: (MenuItem) -> Unit,
-    private val onQuickAdd: (MenuItem) -> Unit
+    private val onQuickAdd: (MenuItem) -> Unit,
+    private val onEmojiClick: (MenuItem) -> Unit
 ) : ListAdapter<MenuItem, MenuAdapter.ViewHolder>(DIFF) {
 
     inner class ViewHolder(
@@ -28,6 +29,7 @@ class MenuAdapter(
 
             root.setOnClickListener { onClick(item) }
             buttonAdd.setOnClickListener { onQuickAdd(item) }
+            textEmoji.setOnClickListener { onEmojiClick(item) }
         }
     }
 
