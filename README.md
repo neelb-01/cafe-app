@@ -6,13 +6,13 @@ check out, and keep a history of past orders. Orders are sent to a
 order history and a cached copy of the menu live in a Room database on the
 device, so they survive an app restart and the menu works offline.
 
-**Stack:** Kotlin · XML layouts + ViewBinding · Navigation component · Room · Coroutines/Flow · Material 3 · Supabase (supabase-kt)
+**Stack:** Kotlin · XML layouts + ViewBinding · Navigation component · Room · Coroutines/Flow · Material 3 · Supabase (supabase-kt) · Media3 ExoPlayer
 
 ## Screens
 
 | Screen | What it does |
 | --- | --- |
-| **Menu** | Search box, horizontal category filters, list of available items with a quick-add button. |
+| **Menu** | Search box, horizontal category filters, list of available items with a quick-add button. Tapping an item's emoji opens a half-screen sheet with a looping video of it and its description. |
 | **Item detail** | Size selector (drinks only), quantity stepper, live total, add to cart. |
 | **Cart** | Per-line quantity steppers and remove, subtotal / tax / total, empty state. |
 | **Checkout** | Name, pickup vs dine-in, note for the barista, order summary. |
@@ -132,3 +132,23 @@ false; deleting it also removes it from any customer's cart.
 `data/SeedData.kt` is only the offline fallback shown before the first
 successful refresh. Its ids match the server seed in `supabase/schema.sql`
 (same items, same order), so keep the two in step if you change either.
+
+## Item videos
+
+The preview sheet plays muted, looping MP4s bundled in
+`app/src/main/assets/video/`, found by the item's name, not its id. For an
+item called "Pain au Chocolat" it tries, in order:
+
+1. `video/pain_au_chocolat.mp4`: the name lowercased, with anything that is
+   not a letter or digit replaced by `_`.
+2. `video/category/pastries.mp4`: the same rule applied to the item's category.
+3. Otherwise the item's emoji, shown large.
+
+So a new menu item needs no code change, only a clip with the right file name.
+Renaming an item in Supabase means renaming its clip too, or it falls back to
+the emoji.
+
+The current clips are from [Pexels](https://www.pexels.com/videos/), which
+allows free use in apps without attribution. Keep new clips short (5–15 s),
+at SD size (about 960×540), and ideally under 3 MB, because every clip is built
+into the APK. The 21 clips add about 32 MB.
