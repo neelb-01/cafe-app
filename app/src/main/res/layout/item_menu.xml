@@ -36,36 +36,12 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/textName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/textName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                    tools:text="Flat White" />
-
-                <TextView
-                    android:id="@+id/chipPopular"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/space_s"
-                    android:background="@drawable/bg_popular"
-                    android:paddingStart="@dimen/space_s"
-                    android:paddingEnd="@dimen/space_s"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="2dp"
-                    android:text="@string/popular"
-                    android:textAllCaps="true"
-                    android:textColor="?attr/colorOnSecondaryContainer"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
-
-            </LinearLayout>
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                tools:text="Flat White" />
 
             <TextView
                 android:id="@+id/textDescription"
@@ -78,14 +54,43 @@
                 android:textColor="?attr/colorOnSurfaceVariant"
                 tools:text="Ristretto shots with velvety microfoam." />
 
-            <TextView
-                android:id="@+id/textPrice"
-                android:layout_width="wrap_content"
+            <!--
+                The chip sits by the price, not the name: beside a long name it
+                was squeezed into whatever width was left and split over two lines.
+            -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_xs"
-                android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
-                android:textColor="?attr/colorPrimary"
-                tools:text="$4.60" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                    android:textColor="?attr/colorPrimary"
+                    tools:text="$4.60" />
+
+                <TextView
+                    android:id="@+id/chipPopular"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_s"
+                    android:background="@drawable/bg_popular"
+                    android:maxLines="1"
+                    android:paddingStart="@dimen/space_s"
+                    android:paddingEnd="@dimen/space_s"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:text="@string/popular"
+                    android:textAllCaps="true"
+                    android:textColor="?attr/colorOnSecondaryContainer"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
