@@ -12,9 +12,9 @@ device, so they survive an app restart and the menu works offline.
 
 | Screen | What it does |
 | --- | --- |
-| **Menu** | Search box, horizontal category filters, list of available items with a quick-add button. Tapping an item's emoji opens a half-screen sheet with a looping video of it and its description. |
+| **Menu** | Search box, horizontal category filters, list of available items with a quick-add button. A **For you** row at the top ranks items from your own order history. Tapping an item's emoji opens a half-screen sheet with a looping video of it and its description. |
 | **Item detail** | Size selector (drinks only), quantity stepper, live total, add to cart. |
-| **Cart** | Per-line quantity steppers and remove, subtotal / tax / total, empty state. |
+| **Cart** | Per-line quantity steppers and remove, a **Goes well with** row of suggestions, subtotal / tax / total, empty state. |
 | **Checkout** | Name, pickup vs dine-in, note for the barista, order summary. |
 | **Order confirmed** | Server-assigned order number (`ADL-1001`), totals, fulfilment message. |
 | **Orders** | Past orders, newest first, with their line items and status. |
@@ -68,6 +68,7 @@ Everything lives in `src/test/` and runs on the JVM — no emulator, no device:
 | Suite | Covers |
 | --- | --- |
 | `PricingTest` | Plain JUnit. Integer tax arithmetic: the exact-half-cent boundary, monotonicity, overflow at the top of the `Int` range, and that the displayed rate matches the rate charged. |
+| `RecommenderTest` | Plain JUnit. The recommendation model: frequency and recency, time-of-day category fit, pairings from past orders, the drink/food fallback before any history, and never suggesting what is unavailable or already in the cart. |
 | `CafeRepositoryTest` | An in-memory Room database under [Robolectric](https://robolectric.org), with a fake backend. Cart merging under 24 concurrent adds; order placement storing the server's receipt, keeping the cart when the server fails, and rolling back cleanly when a local write fails; menu refresh upserting without emptying the cart. |
 
 Robolectric downloads an `android-all` jar on first run, so the initial
