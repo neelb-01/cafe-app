@@ -10,10 +10,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.adl.cafe.R
+import com.adl.cafe.data.model.MenuItem
 import com.adl.cafe.databinding.FragmentMenuBinding
 import com.adl.cafe.ui.cafeViewModelFactory
+import com.adl.cafe.ui.recommendations.RecommendationsRowAdapter
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
@@ -25,7 +28,12 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
     private val binding get() = _binding!!
 
     private lateinit var menuAdapter: MenuAdapter
+    private lateinit var recommendationsAdapter: RecommendationsRowAdapter
     private lateinit var categoryAdapter: CategoryAdapter
+
+    /** The filter the list currently shows, to spot when new results replace it. */
+    private var shownFilter: MenuFilter? = null
+    private var scrollToTopPending = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -38,12 +46,7 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
 
     private fun setupLists() {
         menuAdapter = MenuAdapter(
-            onClick = { item ->
-                findNavController().navigate(
-                    R.id.action_menu_to_detail,
-                    bundleOf(ARG_ITEM_ID to item.id)
-                )
-            },
+            onClick = ::openDetail,
             onQuickAdd = viewModel::quickAdd,
             onEmojiClick = { item ->
                 // A fast double tap would otherwise stack two sheets.
@@ -52,9 +55,15 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
                 }
             }
         )
+        recommendationsAdapter = RecommendationsRowAdapter(
+            titleRes = R.string.for_you,
+            onClick = ::openDetail,
+            onQuickAdd = viewModel::quickAdd
+        )
         binding.recyclerMenu.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = menuAdapter
+            // A header in the same list, so the row scrolls away with the menu.
+            adapter = ConcatAdapter(recommendationsAdapter, menuAdapter)
             setHasFixedSize(true)
         }
 
@@ -67,6 +76,13 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
             )
             adapter = categoryAdapter
         }
+    }
+
+    private fun openDetail(item: MenuItem) {
+        findNavController().navigate(
+            R.id.action_menu_to_detail,
+            bundleOf(ARG_ITEM_ID to item.id)
+        )
     }
 
     private fun setupSearch() {
@@ -100,7 +116,20 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
                                 }
                             }
                         )
-                        menuAdapter.submitList(state.items)
+                        if (shownFilter != null && shownFilter != state.itemsFilter) {
+                            scrollToTopPending = true
+                        }
+                        shownFilter = state.itemsFilter
+                        recommendationsAdapter.submitList(state.recommendations)
+                        menuAdapter.submitList(state.items) {
+                            // RecyclerView holds the top visible item in place, so
+                            // results that land above it (and the For you row) would
+                            // be off-screen. A new filter starts from the top.
+                            if (scrollToTopPending) {
+                                scrollToTopPending = false
+                                _binding?.recyclerMenu?.scrollToPosition(0)
+                            }
+                        }
                         binding.emptyState.visibility =
                             if (state.isEmpty) View.VISIBLE else View.GONE
                     }

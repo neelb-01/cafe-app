@@ -13,7 +13,10 @@ import com.adl.cafe.data.model.OrderLine
 import com.adl.cafe.data.model.OrderType
 import com.adl.cafe.data.model.OrderWithLines
 import com.adl.cafe.data.remote.CafeRemote
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 
 /**
  * The single place the UI talks to for data. ViewModels depend on this, never
@@ -65,6 +68,30 @@ class CafeRepository(
         menuDao.observeMenu(category, query.trim())
 
     fun observeMenuItem(id: Long): Flow<MenuItem?> = menuDao.observeById(id)
+
+    // ---- Recommendations --------------------------------------------------
+
+    /** The menu's "For you" row; re-ranks whenever the menu or order history changes. */
+    fun observeRecommendations(): Flow<List<MenuItem>> = combine(
+        menuDao.observeMenu(null, ""),
+        orderDao.observeOrders()
+    ) { menu, history ->
+        Recommender.forYou(menu, history, System.currentTimeMillis())
+    }.flowOn(Dispatchers.Default)
+
+    /** The cart's "Goes well with" row; never suggests what is already in the cart. */
+    fun observeCartPairings(): Flow<List<MenuItem>> = combine(
+        menuDao.observeMenu(null, ""),
+        orderDao.observeOrders(),
+        cartDao.observeCartLines()
+    ) { menu, history, cart ->
+        Recommender.goesWellWith(
+            menu,
+            history,
+            cart.mapTo(HashSet()) { it.cartItem.menuItemId },
+            System.currentTimeMillis()
+        )
+    }.flowOn(Dispatchers.Default)
 
     // ---- Cart -------------------------------------------------------------
 

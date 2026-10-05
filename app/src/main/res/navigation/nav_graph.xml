@@ -31,6 +31,9 @@
         <action
             android:id="@+id/action_cart_to_checkout"
             app:destination="@id/checkoutFragment" />
+        <action
+            android:id="@+id/action_cart_to_detail"
+            app:destination="@id/detailFragment" />
     </fragment>
 
     <fragment

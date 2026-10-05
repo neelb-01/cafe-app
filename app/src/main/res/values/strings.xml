@@ -19,6 +19,8 @@
     <string name="popular">Popular</string>
     <string name="add">Add</string>
     <string name="added_to_cart">%1$s added to cart</string>
+    <string name="add_item">Add %1$s</string>
+    <string name="for_you">For you</string>
     <string name="menu_empty_title">Nothing matches that</string>
     <string name="menu_empty_body">Try a different search or pick another category.</string>
 
@@ -42,6 +44,7 @@
     <string name="total">Total</string>
     <string name="remove_item">Remove item</string>
     <string name="size_and_unit_price">%1$s · %2$s each</string>
+    <string name="goes_well_with">Goes well with</string>
 
     <!-- Checkout -->
     <string name="checkout_details">Your details</string>

@@ -12,13 +12,26 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+/** A category chip (null is "All") plus search text. */
+data class MenuFilter(val category: String?, val query: String) {
+    val isActive: Boolean get() = category != null || query.isNotBlank()
+}
 
 data class MenuUiState(
     val categories: List<String> = emptyList(),
     val selectedCategory: String? = null,
     val items: List<MenuItem> = emptyList(),
+    /**
+     * The filter [items] were fetched for. It lags [query] and [selectedCategory]
+     * until the new results arrive, so it changes in the same state as they do.
+     */
+    val itemsFilter: MenuFilter = MenuFilter(null, ""),
+    /** The "For you" row; empty while a search or category filter is active. */
+    val recommendations: List<MenuItem> = emptyList(),
     val query: String = "",
     val isLoading: Boolean = true
 ) {
@@ -33,21 +46,27 @@ class MenuViewModel(private val repository: CafeRepository) : ViewModel() {
 
     /** Re-runs the menu query whenever the category chip or search text changes. */
     private val filteredItems = combine(selectedCategory, query) { category, text ->
-        category to text
-    }.flatMapLatest { (category, text) ->
-        repository.observeMenu(category, text)
+        MenuFilter(category, text)
+    }.flatMapLatest { filter ->
+        repository.observeMenu(filter.category, filter.query).map { items -> filter to items }
     }
 
     val state: StateFlow<MenuUiState> = combine(
         repository.observeCategories(),
         selectedCategory,
         query,
-        filteredItems
-    ) { categories, category, text, items ->
+        filteredItems,
+        repository.observeRecommendations()
+    ) { categories, category, text, (itemsFilter, items), recommendations ->
         MenuUiState(
             categories = categories,
             selectedCategory = category,
             items = items,
+            itemsFilter = itemsFilter,
+            // Recommendations sit above the full menu; under a filter they would
+            // suggest things the filter has just hidden. Keyed on itemsFilter so
+            // the row and the results change in the same frame.
+            recommendations = if (itemsFilter.isActive) emptyList() else recommendations,
             query = text,
             isLoading = false
         )

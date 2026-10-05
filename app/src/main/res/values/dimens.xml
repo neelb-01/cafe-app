@@ -9,4 +9,5 @@
     <dimen name="avatar_size">56dp</dimen>
     <dimen name="avatar_size_large">104dp</dimen>
     <dimen name="card_corner">20dp</dimen>
+    <dimen name="recommendation_card_width">148dp</dimen>
 </resources>
