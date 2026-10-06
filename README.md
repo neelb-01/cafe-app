@@ -12,7 +12,7 @@ device, so they survive an app restart and the menu works offline.
 
 | Screen | What it does |
 | --- | --- |
-| **Menu** | Search box, horizontal category filters, list of available items with a quick-add button. A **For you** row at the top ranks items from your own order history. Tapping an item's emoji opens a half-screen sheet with a looping video of it and its description. |
+| **Menu** | Search box, horizontal category filters, list of available items with a quick-add button; a new search or filter starts from the top of the list. A **For you** row at the top ranks items from your own order history. Popular items carry a tag beside the price. Quick-add confirms with a snackbar above the bottom bar, so Cart stays one tap away. Tapping an item's emoji opens a half-screen sheet with a looping video of it and its description. |
 | **Item detail** | Size selector (drinks only), quantity stepper, live total, add to cart. |
 | **Cart** | Per-line quantity steppers and remove, a **Goes well with** row of suggestions, subtotal / tax / total, empty state. |
 | **Checkout** | Name, pickup vs dine-in, note for the barista, order summary. |
