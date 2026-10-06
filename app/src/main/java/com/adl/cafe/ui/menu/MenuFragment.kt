@@ -141,7 +141,10 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
                                 binding.root,
                                 getString(R.string.added_to_cart, name),
                                 Snackbar.LENGTH_SHORT
-                            ).show()
+                            )
+                                // Sit above the bottom bar so Cart stays tappable.
+                                .setAnchorView(requireActivity().findViewById<View>(R.id.bottomNav))
+                                .show()
                             viewModel.consumeAddedToCart()
                         }
                     }
