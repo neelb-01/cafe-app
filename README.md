@@ -6,13 +6,13 @@ check out, and keep a history of past orders. Orders are sent to a
 order history and a cached copy of the menu live in a Room database on the
 device, so they survive an app restart and the menu works offline.
 
-**Stack:** Kotlin · XML layouts + ViewBinding · Navigation component · Room · Coroutines/Flow · Material 3 · Supabase (supabase-kt) · Media3 ExoPlayer
+**Stack:** Kotlin · XML layouts + ViewBinding · Navigation component · Room · Coroutines/Flow · Material 3 · Supabase (supabase-kt) · Media3 ExoPlayer · Smile (recommendation model) · Gemini via a Supabase Edge Function (menu assistant)
 
 ## Screens
 
 | Screen | What it does |
 | --- | --- |
-| **Menu** | Search box, horizontal category filters, list of available items with a quick-add button; a new search or filter starts from the top of the list. A **For you** row at the top ranks items from your own order history, using weights learned on the device by logistic regression (the Smile ML library). Popular items carry a tag beside the price. Quick-add confirms with a snackbar above the bottom bar, so Cart stays one tap away. Tapping an item's emoji opens a half-screen sheet with a looping video of it and its description. |
+| **Menu** | Search box, horizontal category filters, list of available items with a quick-add button; a new search or filter starts from the top of the list. A **For you** row at the top ranks items from your own order history, using weights learned on the device by logistic regression (the Smile ML library). Popular items carry a tag beside the price. Quick-add confirms with a snackbar above the bottom bar, so Cart stays one tap away. Tapping an item's emoji opens a half-screen sheet with a looping video of it and its description. An **Ask** button opens the menu assistant (see [AI assistant](#ai-assistant)). |
 | **Item detail** | Size selector (drinks only), quantity stepper, live total, add to cart. |
 | **Cart** | Per-line quantity steppers and remove, a **Goes well with** row of suggestions, subtotal / tax / total, empty state. |
 | **Checkout** | Name, pickup vs dine-in, note for the barista, order summary. |
@@ -56,6 +56,42 @@ With the publishable key the app can only read `menu_items` and call
 dashboard's Table Editor. `place_order` prices the order from the server's own
 menu, so a modified client cannot set its own prices.
 
+## AI assistant
+
+The **Ask** button on the Menu opens a chat sheet. Customers can ask about the
+menu ("anything decaf?") or describe what they want ("something cold, not too
+sweet", "a large latte and two croissants"). The assistant replies in a sentence
+or two, with suggestion cards that add to the cart in one tap. It never places
+orders: checkout is unchanged.
+
+It runs on Google's Gemini API (`gemini-3.5-flash-lite`, on the free tier) through a
+Supabase Edge Function, `supabase/functions/chat/index.ts`, so the Gemini API key
+stays on the server and never ships in the APK. The function reads `menu_items`
+itself and returns only item ids, sizes and quantities. The app matches those to
+its own menu and drops anything sold out, and `place_order` still sets the
+prices.
+
+To deploy it (the app shows "Could not reach the assistant" until you do):
+
+1. Get a free API key from [Google AI Studio](https://aistudio.google.com/apikey).
+2. In the Supabase dashboard, open **Edge Functions → Secrets** and add
+   `GEMINI_API_KEY` with that key.
+3. Open **Edge Functions → Deploy a new function → Via Editor**, name it `chat`,
+   paste in `supabase/functions/chat/index.ts`, and deploy.
+4. In the function's settings, turn off **Verify JWT** (or **Enforce JWT
+   verification**). The app authenticates with the publishable key, which is
+   not a JWT, so leaving it on rejects every request with a 401.
+
+Or, with the Supabase CLI: `supabase secrets set GEMINI_API_KEY=...` and
+`supabase functions deploy chat --no-verify-jwt`.
+
+The free tier costs nothing but is rate limited per minute and per day; past
+the limit the sheet shows "Could not reach the assistant" until it resets.
+Google may use free-tier prompts to improve its products, so the assistant only
+ever sees the menu and what the customer types. Anyone with the app's
+publishable key can call the function, so it also caps each request (the last
+20 messages, 1,000 characters each, 4,096 output tokens).
+
 ## Tests
 
 Everything lives in `src/test/` and runs on the JVM — no emulator, no device:
@@ -70,7 +106,7 @@ Everything lives in `src/test/` and runs on the JVM — no emulator, no device:
 | `PricingTest` | Plain JUnit. Integer tax arithmetic: the exact-half-cent boundary, monotonicity, overflow at the top of the `Int` range, and that the displayed rate matches the rate charged. |
 | `RecommenderTest` | Plain JUnit. The recommendation model: frequency and recency, time-of-day category fit, pairings from past orders, the drink/food fallback before any history, and never suggesting what is unavailable or already in the cart. Covers the learned weights too: they equal the priors with no history, and they move with the customer's habits (time of day, avoiding popular items, pairing drinks with drinks). |
 | `LogisticRegressionTest` | Plain JUnit. The Smile-backed fitter behind those weights: recovers known coefficients from synthetic data, returns the prior with no data or a single class, moves further from the prior as examples build up, and a stronger prior holds the weights closer. |
-| `CafeRepositoryTest` | An in-memory Room database under [Robolectric](https://robolectric.org), with a fake backend. Cart merging under 24 concurrent adds; order placement storing the server's receipt, keeping the cart when the server fails, and rolling back cleanly when a local write fails; menu refresh upserting without emptying the cart. |
+| `CafeRepositoryTest` | An in-memory Room database under [Robolectric](https://robolectric.org), with a fake backend. Cart merging under 24 concurrent adds; order placement storing the server's receipt, keeping the cart when the server fails, and rolling back cleanly when a local write fails; menu refresh upserting without emptying the cart; assistant suggestions matched to the local menu, dropping unknown and sold-out items and keeping food at one size. |
 
 Robolectric downloads an `android-all` jar on first run, so the initial
 `./gradlew test` needs network access.
@@ -154,3 +190,14 @@ The current clips are from [Pexels](https://www.pexels.com/videos/), which
 allows free use in apps without attribution. Keep new clips short (5–15 s),
 at SD size (about 960×540), and ideally under 3 MB, because every clip is built
 into the APK. The 21 clips add about 32 MB.
+
+## Credits
+
+The recommendation model is trained with
+[Smile](https://github.com/haifengl/smile) (Statistical Machine Intelligence
+and Learning Engine) 2.6.0 by Haifeng Li, used unmodified under the
+[GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.html).
+
+The menu assistant uses Google's [Gemini API](https://ai.google.dev/gemini-api)
+through the [Google Gen AI SDK](https://github.com/googleapis/js-genai)
+(Apache License 2.0).
