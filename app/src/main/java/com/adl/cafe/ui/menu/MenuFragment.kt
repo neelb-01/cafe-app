@@ -66,6 +66,8 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
         menuAdapter = MenuAdapter(
             onClick = ::openDetail,
             onQuickAdd = viewModel::quickAdd,
+            onIncrement = viewModel::increment,
+            onDecrement = viewModel::decrement,
             onEmojiClick = { item ->
                 // A fast double tap would otherwise stack two sheets.
                 if (childFragmentManager.findFragmentByTag(ItemPreviewSheet.TAG) == null) {
@@ -139,7 +141,9 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
                         }
                         shownFilter = state.itemsFilter
                         recommendationsAdapter.submitList(state.recommendations)
-                        menuAdapter.submitList(state.items) {
+                        menuAdapter.submitList(
+                            state.items.map { MenuRow(it, state.cartQuantities[it.id] ?: 0) }
+                        ) {
                             // RecyclerView holds the top visible item in place, so
                             // results that land above it (and the For you row) would
                             // be off-screen. A new filter starts from the top.

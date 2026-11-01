@@ -32,6 +32,8 @@ data class MenuUiState(
     val itemsFilter: MenuFilter = MenuFilter(null, ""),
     /** The "For you" row; empty while a search or category filter is active. */
     val recommendations: List<MenuItem> = emptyList(),
+    /** Units of each item already in the cart, so its row shows a stepper instead of Add. */
+    val cartQuantities: Map<Long, Int> = emptyMap(),
     val query: String = "",
     val isLoading: Boolean = true
 ) {
@@ -56,8 +58,9 @@ class MenuViewModel(private val repository: CafeRepository) : ViewModel() {
         selectedCategory,
         query,
         filteredItems,
-        repository.observeRecommendations()
-    ) { categories, category, text, (itemsFilter, items), recommendations ->
+        // Paired because combine takes at most five typed flows.
+        combine(repository.observeRecommendations(), repository.observeCartQuantities(), ::Pair)
+    ) { categories, category, text, (itemsFilter, items), (recommendations, cartQuantities) ->
         MenuUiState(
             categories = categories,
             selectedCategory = category,
@@ -67,6 +70,7 @@ class MenuViewModel(private val repository: CafeRepository) : ViewModel() {
             // suggest things the filter has just hidden. Keyed on itemsFilter so
             // the row and the results change in the same frame.
             recommendations = if (itemsFilter.isActive) emptyList() else recommendations,
+            cartQuantities = cartQuantities,
             query = text,
             isLoading = false
         )
@@ -93,6 +97,19 @@ class MenuViewModel(private val repository: CafeRepository) : ViewModel() {
             repository.addToCart(item.id, DrinkSize.SMALL, 1)
             _addedToCart.value = item.name
         }
+    }
+
+    /**
+     * The stepper's +: one more at the quick-add size. No snackbar, since the
+     * count on the row is the confirmation.
+     */
+    fun increment(item: MenuItem) {
+        viewModelScope.launch { repository.addToCart(item.id, DrinkSize.SMALL, 1) }
+    }
+
+    /** The stepper's −; at zero the row goes back to Add. */
+    fun decrement(item: MenuItem) {
+        viewModelScope.launch { repository.removeOneFromCart(item.id) }
     }
 
     fun consumeAddedToCart() {

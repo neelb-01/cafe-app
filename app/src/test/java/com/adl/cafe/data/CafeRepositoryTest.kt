@@ -312,6 +312,46 @@ class CafeRepositoryTest {
         chat
     )
 
+    // ---- The Menu's stepper -----------------------------------------------
+
+    @Test
+    fun cartQuantitiesAddUpEverySizeOfAnItem() = runBlocking {
+        seedMenu()
+        repository.addToCart(LATTE_ID, DrinkSize.SMALL, 1)
+        repository.addToCart(LATTE_ID, DrinkSize.LARGE, 2)
+        repository.addToCart(CROISSANT_ID, DrinkSize.SMALL, 1)
+
+        val quantities = repository.observeCartQuantities().first()
+
+        assertEquals(mapOf(LATTE_ID to 3, CROISSANT_ID to 1), quantities)
+    }
+
+    @Test
+    fun removingOneTakesItOffTheSmallLineFirst() = runBlocking {
+        seedMenu()
+        repository.addToCart(LATTE_ID, DrinkSize.LARGE, 1)
+        repository.addToCart(LATTE_ID, DrinkSize.SMALL, 2)
+
+        repository.removeOneFromCart(LATTE_ID)
+
+        val lines = database.cartDao().getCartLines().associate { it.cartItem.size to it.cartItem.quantity }
+        assertEquals(mapOf(DrinkSize.LARGE to 1, DrinkSize.SMALL to 1), lines)
+    }
+
+    @Test
+    fun removingTheLastOneDeletesTheLineAndFallsBackToOtherSizes() = runBlocking {
+        seedMenu()
+        repository.addToCart(LATTE_ID, DrinkSize.SMALL, 1)
+        repository.addToCart(LATTE_ID, DrinkSize.LARGE, 1)
+
+        repository.removeOneFromCart(LATTE_ID)
+        assertEquals(listOf(DrinkSize.LARGE), database.cartDao().getCartLines().map { it.cartItem.size })
+
+        repository.removeOneFromCart(LATTE_ID)
+        assertTrue(database.cartDao().getCartLines().isEmpty())
+        assertEquals(emptyMap<Long, Int>(), repository.observeCartQuantities().first())
+    }
+
     // ---- Assistant suggestions are checked against the local menu ---------
 
     @Test

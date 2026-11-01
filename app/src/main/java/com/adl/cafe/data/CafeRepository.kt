@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 
 /**
  * The single place the UI talks to for data. ViewModels depend on this, never
@@ -138,6 +139,12 @@ class CafeRepository(
 
     fun observeCartCount(): Flow<Int> = cartDao.observeCartCount()
 
+    /** Units of each menu item in the cart, all sizes together, keyed by menu item id. */
+    fun observeCartQuantities(): Flow<Map<Long, Int>> = cartDao.observeCartLines().map { lines ->
+        lines.groupingBy { it.cartItem.menuItemId }
+            .fold(0) { total, line -> total + line.cartItem.quantity }
+    }
+
     /**
      * Adding an item already in the cart at the same size bumps its quantity.
      *
@@ -152,6 +159,28 @@ class CafeRepository(
                 cartDao.insert(CartItem(menuItemId = menuItemId, size = size, quantity = quantity))
             } else {
                 cartDao.update(existing.copy(quantity = existing.quantity + quantity))
+            }
+        }
+    }
+
+    /**
+     * Takes one of [menuItemId] out of the cart, for the Menu's stepper. It comes
+     * off the [DrinkSize.SMALL] line that quick-add fills when there is one, else
+     * the item's oldest line, and the last unit removes the line. One transaction,
+     * like [addToCart], so a fast double tap cannot act on a stale quantity.
+     */
+    suspend fun removeOneFromCart(menuItemId: Long) {
+        database.withTransaction {
+            val lines = cartDao.getCartLines()
+                .map { it.cartItem }
+                .filter { it.menuItemId == menuItemId }
+            val line = lines.firstOrNull { it.size == DrinkSize.SMALL }
+                ?: lines.firstOrNull()
+                ?: return@withTransaction
+            if (line.quantity <= 1) {
+                cartDao.delete(line)
+            } else {
+                cartDao.update(line.copy(quantity = line.quantity - 1))
             }
         }
     }
