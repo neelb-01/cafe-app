@@ -96,6 +96,8 @@ dependencies {
 
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.postgrest)
+    // Calls the `chat` Edge Function behind the Menu's Ask sheet.
+    implementation(libs.supabase.functions)
     implementation(libs.ktor.client.okhttp)
 
     // Fits the recommendation weights (data/LogisticRegression.kt).

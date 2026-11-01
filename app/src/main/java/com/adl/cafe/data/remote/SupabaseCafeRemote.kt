@@ -5,8 +5,6 @@ import com.adl.cafe.data.model.DrinkSize
 import com.adl.cafe.data.model.MenuItem
 import com.adl.cafe.data.model.OrderType
 import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.createSupabaseClient
-import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
@@ -43,12 +41,9 @@ class SupabaseCafeRemote(private val client: SupabaseClient) : CafeRemote {
         return client.postgrest.rpc(FUNCTION_PLACE_ORDER, params).decodeAs()
     }
 
-    companion object {
-        private const val TABLE_MENU = "menu_items"
-        private const val FUNCTION_PLACE_ORDER = "place_order"
-
-        fun create(url: String, key: String): SupabaseCafeRemote =
-            SupabaseCafeRemote(createSupabaseClient(url, key) { install(Postgrest) })
+    private companion object {
+        const val TABLE_MENU = "menu_items"
+        const val FUNCTION_PLACE_ORDER = "place_order"
     }
 }
 

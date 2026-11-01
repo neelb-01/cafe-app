@@ -12,10 +12,12 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.adl.cafe.R
 import com.adl.cafe.data.model.MenuItem
 import com.adl.cafe.databinding.FragmentMenuBinding
 import com.adl.cafe.ui.cafeViewModelFactory
+import com.adl.cafe.ui.chat.ChatSheet
 import com.adl.cafe.ui.recommendations.RecommendationsRowAdapter
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
@@ -41,7 +43,23 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
 
         setupLists()
         setupSearch()
+        setupAsk()
         observeState()
+    }
+
+    private fun setupAsk() {
+        binding.fabAsk.setOnClickListener {
+            // A fast double tap would otherwise stack two sheets.
+            if (childFragmentManager.findFragmentByTag(ChatSheet.TAG) == null) {
+                ChatSheet().show(childFragmentManager, ChatSheet.TAG)
+            }
+        }
+        // Collapse to the icon while scrolling down the menu, so it covers less.
+        binding.recyclerMenu.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (dy > 0) binding.fabAsk.shrink() else if (dy < 0) binding.fabAsk.extend()
+            }
+        })
     }
 
     private fun setupLists() {
@@ -142,8 +160,9 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
                                 getString(R.string.added_to_cart, name),
                                 Snackbar.LENGTH_SHORT
                             )
-                                // Sit above the bottom bar so Cart stays tappable.
-                                .setAnchorView(requireActivity().findViewById<View>(R.id.bottomNav))
+                                // Above the Ask button, which sits above the bottom
+                                // bar, so neither is covered and Cart stays tappable.
+                                .setAnchorView(binding.fabAsk)
                                 .show()
                             viewModel.consumeAddedToCart()
                         }

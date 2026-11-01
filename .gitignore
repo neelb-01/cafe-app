@@ -11,3 +11,5 @@ local.properties
 CLAUDE.md
 .claude/
 HANDOVER.md
+# Supabase CLI local state
+supabase/.temp/

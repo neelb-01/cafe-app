@@ -5,6 +5,11 @@ import android.util.Log
 import com.adl.cafe.data.AppDatabase
 import com.adl.cafe.data.CafeRepository
 import com.adl.cafe.data.remote.SupabaseCafeRemote
+import com.adl.cafe.data.remote.SupabaseChatRemote
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.functions.Functions
+import io.github.jan.supabase.postgrest.Postgrest
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,8 +28,20 @@ class CafeApplication : Application() {
             "Set supabase.url and supabase.key in local.properties"
         }
         val db = AppDatabase.getInstance(this)
-        val remote = SupabaseCafeRemote.create(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_KEY)
-        CafeRepository(db, db.menuDao(), db.cartDao(), db.orderDao(), remote)
+        val supabase = createSupabaseClient(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_KEY) {
+            install(Postgrest)
+            install(Functions)
+            // The assistant can take several seconds to reply; the default is 10.
+            requestTimeout = 60.seconds
+        }
+        CafeRepository(
+            db,
+            db.menuDao(),
+            db.cartDao(),
+            db.orderDao(),
+            SupabaseCafeRemote(supabase),
+            SupabaseChatRemote(supabase)
+        )
     }
 
     override fun onCreate() {

@@ -52,7 +52,7 @@
             android:paddingStart="@dimen/space_m"
             android:paddingEnd="@dimen/space_m"
             android:paddingTop="@dimen/space_s"
-            android:paddingBottom="@dimen/space_l"
+            android:paddingBottom="@dimen/fab_clearance"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/item_menu" />
 
@@ -82,6 +82,16 @@
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
         </LinearLayout>
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/fabAsk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="@dimen/space_m"
+            android:layout_marginBottom="@dimen/space_m"
+            android:text="@string/chat_open"
+            app:icon="@drawable/ic_chat" />
 
     </FrameLayout>
 

@@ -24,6 +24,23 @@
     <string name="menu_empty_title">Nothing matches that</string>
     <string name="menu_empty_body">Try a different search or pick another category.</string>
 
+    <!-- Menu assistant -->
+    <string name="chat_open">Ask</string>
+    <string name="chat_title">Menu assistant</string>
+    <string name="chat_disclaimer">AI can make mistakes. Check allergens with the barista.</string>
+    <string name="chat_intro">Ask about the menu or say what you feel like, and I will suggest something to add.</string>
+    <string name="chat_starter_cold">Something cold, not too sweet</string>
+    <string name="chat_starter_breakfast">A quick breakfast under $8</string>
+    <string name="chat_starter_order">A large latte and two croissants</string>
+    <string name="chat_hint">Ask about the menu</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_thinking">Thinking…</string>
+    <string name="chat_error">Could not reach the assistant.</string>
+    <string name="chat_retry">Try again</string>
+    <string name="chat_added">%1$s added to cart</string>
+    <string name="chat_suggestion_quantity">%1$d × %2$s</string>
+    <string name="chat_suggestion_size_price">%1$s · %2$s</string>
+
     <!-- Detail -->
     <string name="label_size">Size</string>
     <string name="label_quantity">Quantity</string>

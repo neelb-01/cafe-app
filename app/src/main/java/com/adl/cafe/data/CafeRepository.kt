@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import com.adl.cafe.data.dao.CartDao
 import com.adl.cafe.data.dao.MenuDao
 import com.adl.cafe.data.dao.OrderDao
+import com.adl.cafe.data.model.AssistantReply
 import com.adl.cafe.data.model.CartItem
 import com.adl.cafe.data.model.CartLine
 import com.adl.cafe.data.model.DrinkSize
@@ -12,10 +13,14 @@ import com.adl.cafe.data.model.OrderEntity
 import com.adl.cafe.data.model.OrderLine
 import com.adl.cafe.data.model.OrderType
 import com.adl.cafe.data.model.OrderWithLines
+import com.adl.cafe.data.model.Suggestion
 import com.adl.cafe.data.remote.CafeRemote
+import com.adl.cafe.data.remote.ChatMessage
+import com.adl.cafe.data.remote.ChatRemote
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 
 /**
@@ -24,13 +29,15 @@ import kotlinx.coroutines.flow.flowOn
  *
  * Room is what the UI observes. [remote] is the source of truth for the menu
  * (copied into Room by [refreshMenu]) and where orders are actually placed.
+ * [chat] is the menu assistant, the one call the UI makes that needs the network.
  */
 class CafeRepository(
     private val database: AppDatabase,
     private val menuDao: MenuDao,
     private val cartDao: CartDao,
     private val orderDao: OrderDao,
-    private val remote: CafeRemote
+    private val remote: CafeRemote,
+    private val chat: ChatRemote
 ) {
 
     /**
@@ -98,6 +105,32 @@ class CafeRepository(
             weights = weights
         )
     }.flowOn(Dispatchers.Default)
+
+    // ---- Assistant --------------------------------------------------------
+
+    /**
+     * The assistant's reply to [conversation], oldest first and ending with
+     * the customer's message. Throws if the assistant could not be reached.
+     *
+     * Suggestions are matched to the local menu by id, and any item that is
+     * unknown here or sold out is dropped, so the sheet only offers what
+     * quick-add could add. Food has one size, so it is always [DrinkSize.SMALL].
+     */
+    suspend fun askAssistant(conversation: List<ChatMessage>): AssistantReply {
+        val response = chat.send(conversation)
+        val available = menuDao.observeMenu(null, "").first().associateBy { it.id }
+        return AssistantReply(
+            text = response.reply,
+            suggestions = response.suggestions.mapNotNull { line ->
+                val item = available[line.menuItemId] ?: return@mapNotNull null
+                Suggestion(
+                    item = item,
+                    size = if (item.sizable) line.size else DrinkSize.SMALL,
+                    quantity = line.quantity.coerceAtLeast(1)
+                )
+            }
+        )
+    }
 
     // ---- Cart -------------------------------------------------------------
 

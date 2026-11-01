@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.adl.cafe.CafeApplication
 import com.adl.cafe.data.CafeRepository
 import com.adl.cafe.ui.cart.CartViewModel
+import com.adl.cafe.ui.chat.ChatViewModel
 import com.adl.cafe.ui.checkout.CheckoutViewModel
 import com.adl.cafe.ui.detail.DetailViewModel
 import com.adl.cafe.ui.menu.MenuViewModel
@@ -23,6 +24,7 @@ class CafeViewModelFactory(
         modelClass.isAssignableFrom(CartViewModel::class.java) -> CartViewModel(repository)
         modelClass.isAssignableFrom(CheckoutViewModel::class.java) -> CheckoutViewModel(repository)
         modelClass.isAssignableFrom(OrdersViewModel::class.java) -> OrdersViewModel(repository)
+        modelClass.isAssignableFrom(ChatViewModel::class.java) -> ChatViewModel(repository)
         else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
     } as T
 }

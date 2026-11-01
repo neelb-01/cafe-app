@@ -14,8 +14,13 @@ import com.adl.cafe.data.model.OrderLine
 import com.adl.cafe.data.model.OrderType
 import com.adl.cafe.data.model.OrderWithLines
 import com.adl.cafe.data.remote.CafeRemote
+import com.adl.cafe.data.remote.ChatMessage
+import com.adl.cafe.data.remote.ChatRemote
+import com.adl.cafe.data.remote.ChatResponse
+import com.adl.cafe.data.remote.ChatRole
 import com.adl.cafe.data.remote.PlacedLine
 import com.adl.cafe.data.remote.PlacedOrder
+import com.adl.cafe.data.remote.SuggestedLine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -55,6 +60,7 @@ class CafeRepositoryTest {
     private lateinit var database: AppDatabase
     private lateinit var repository: CafeRepository
     private val remote = FakeCafeRemote()
+    private val chat = FakeChatRemote()
 
     @Before
     fun createDatabase() {
@@ -302,8 +308,64 @@ class CafeRepositoryTest {
         database.menuDao(),
         database.cartDao(),
         orderDao,
-        remote
+        remote,
+        chat
     )
+
+    // ---- Assistant suggestions are checked against the local menu ---------
+
+    @Test
+    fun assistantSuggestionsResolveToLocalMenuItems() = runBlocking {
+        seedMenu()
+        chat.response = ChatResponse(
+            reply = "A large latte and two croissants coming up.",
+            suggestions = listOf(
+                SuggestedLine(LATTE_ID, DrinkSize.LARGE, 1),
+                SuggestedLine(CROISSANT_ID, DrinkSize.SMALL, 2)
+            )
+        )
+        val conversation = listOf(ChatMessage(ChatRole.USER, "A large latte and two croissants"))
+
+        val reply = repository.askAssistant(conversation)
+
+        assertEquals(conversation, chat.lastMessages)
+        assertEquals("A large latte and two croissants coming up.", reply.text)
+        assertEquals(listOf("Latte", "Croissant"), reply.suggestions.map { it.item.name })
+        assertEquals(DrinkSize.LARGE, reply.suggestions[0].size)
+        assertEquals(450 + DrinkSize.LARGE.surchargeCents, reply.suggestions[0].unitPriceCents)
+        assertEquals(2, reply.suggestions[1].quantity)
+    }
+
+    @Test
+    fun assistantSuggestionsDropUnknownAndSoldOutItems() = runBlocking {
+        seedMenu()
+        database.menuDao().insertAll(listOf(latte().copy(id = 3, name = "Mocha", isAvailable = false)))
+        chat.response = ChatResponse(
+            reply = "Try these.",
+            suggestions = listOf(
+                SuggestedLine(99, DrinkSize.SMALL, 1),
+                SuggestedLine(3, DrinkSize.SMALL, 1),
+                SuggestedLine(LATTE_ID, DrinkSize.MEDIUM, 1)
+            )
+        )
+
+        val reply = repository.askAssistant(listOf(ChatMessage(ChatRole.USER, "Something hot")))
+
+        assertEquals(listOf("Latte"), reply.suggestions.map { it.item.name })
+    }
+
+    @Test
+    fun assistantFoodSuggestionsAreAlwaysSmall() = runBlocking {
+        seedMenu()
+        chat.response = ChatResponse(
+            reply = "A croissant.",
+            suggestions = listOf(SuggestedLine(CROISSANT_ID, DrinkSize.LARGE, 1))
+        )
+
+        val reply = repository.askAssistant(listOf(ChatMessage(ChatRole.USER, "A big croissant")))
+
+        assertEquals(DrinkSize.SMALL, reply.suggestions.single().size)
+    }
 
     /** Explicit ids: Room only autogenerates when the id is left at 0. */
     private suspend fun seedMenu() {
@@ -358,6 +420,19 @@ private class FailingOrderDao(private val delegate: OrderDao) : OrderDao {
  * Stands in for Supabase. Prices and numbers orders the way `place_order` in
  * `supabase/schema.sql` does, from whatever menu the cart lines carry.
  */
+private class FakeChatRemote : ChatRemote {
+
+    var response = ChatResponse(reply = "")
+
+    var lastMessages: List<ChatMessage>? = null
+        private set
+
+    override suspend fun send(messages: List<ChatMessage>): ChatResponse {
+        lastMessages = messages
+        return response
+    }
+}
+
 private class FakeCafeRemote : CafeRemote {
 
     var menu: List<MenuItem> = emptyList()
