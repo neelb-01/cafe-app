@@ -1,0 +1,6 @@
+{
+  // The Supabase Edge Function runs on Deno (npm: imports, Deno.serve), so
+  // only that folder is checked by the Deno extension; everything else keeps
+  // the editor's normal TypeScript and Kotlin tooling.
+  "deno.enablePaths": ["supabase/functions"]
+}
